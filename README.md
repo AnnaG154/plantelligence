@@ -1,81 +1,60 @@
-## 📂 Project Structure
+# 🌿 Plantelligence — system rekomendacji roślin
 
-Struktura repozytorium Plantelligence:
+Projekt edukacyjny wykorzystujący uczenie maszynowe do rekomendowania roślin na podstawie ich cech i wymagań uprawowych.
 
-project ML/
-│
-├── data/ # surowe i przetworzone dane
-│ └── plants_clean_final.csv
-│
-├── artifacts/ # zapisane artefakty feature transformation
-│ ├── ohe.pkl # OneHotEncoder (18 kolumn)
-│ ├── feature_names_ohe.json # nazwy kolumn po OHE
-│ ├── scaler.pkl # StandardScaler (2 kolumny)
-│ ├── pca.pkl # PCA (10 wymiarów)
-│ ├── plant_embeddings.npy # embeddingi wszystkich roślin (159 × 10)
-│ └── plant_embeddings.csv # embeddingi z nazwami (do debugowania)
-│
-├── notebooks/ # Jupyter notebooki z analizą i pipeline
-│ └── feature_transformation.ipynb
-│
-├── inference_utils.py # funkcje inference (build_feature_matrix, to_embedding)
-├── similarity.py # funkcje wyszukiwania podobnych roślin (cosine similarity)
-└── README.md # dokumentacja projektu
+## Projekt zespołowy i mój wkład
 
+Projekt powstał zespołowo podczas kursu Data Science w infoShare Academy.
 
-### Opis
-- **data/** → dane wejściowe do modelu (csv, inne źródła).  
-- **artifacts/** → wszystkie artefakty zapisane podczas Feature Transformation (ohe, scaler, pca, embeddingi).  
-- **notebooks/** → analizy krok po kroku (EDA, feature engineering, transformacje).  
-- **inference_utils.py** → funkcje do przygotowania wektorów cech i embeddingów.  
-- **similarity.py** → logika top-N rekomendacji (cosine similarity).  
-- **README.md** → dokumentacja repo.
+Mój wkład obejmował przygotowanie danych, analizę eksploracyjną, tworzenie i przekształcanie cech, modelowanie oraz obliczenia służące rekomendowaniu roślin.
 
+Aplikacja użytkowa i prezentacja projektu były odrębnymi zadaniami zespołu. To repozytorium prezentuje część analityczną i ML. Link do aplikacji nie jest obecnie dostępny.
 
-## 🚀 Usage (Feature Transformation + Inference)
+## Cel
 
-Ten projekt buduje stabilny wektor cech dla roślin i zamienia go w embedding PCA (10D), który można wykorzystać do rekomendacji.
+System umożliwia:
+- wyszukiwanie roślin podobnych do wybranego gatunku;
+- rekomendowanie roślin na podstawie podanego zestawu cech.
 
-### 1. Budowa wektora cech (21 kolumn)
-OHE (18 kolumn) + Scaler (2 kolumny) + Binarka (1 kolumna).
-```python
-import pandas as pd
-from inference_utils import build_feature_matrix
+Zbiór przetworzonych danych obejmuje 159 roślin.
 
-df = pd.read_csv("data/plants_clean_final.csv")
-X_full, feature_names = build_feature_matrix(df)
-print(X_full.shape)   # (n, 21)
+## Przebieg analizy
 
-Embedding przez PCA (10D)
+1. Eksploracja danych i przygotowanie cech.
+2. Kodowanie cech kategorycznych i skalowanie wybranych cech liczbowych.
+3. Redukcja wymiarowości za pomocą PCA do 10 składowych.
+4. Porównanie różnych liczb klastrów KMeans metodą łokcia i Silhouette Score.
+5. Wybór 10 klastrów jako kompromisu między wynikami a interpretowalnością.
+6. Wyszukiwanie podobnych roślin za pomocą podobieństwa kosinusowego.
 
-from inference_utils import to_embedding
+W module `recommend.py` rekomendacje są wyszukiwane w obrębie wybranego klastra.
 
-X_pca, feature_names = to_embedding(df)
-print(X_pca.shape)    # (n, 10)
+## Technologie
 
-Cosine similarity (top-N podobnych roślin)
+Python · pandas · NumPy · scikit-learn · Jupyter Notebook · Matplotlib · joblib
 
-from similarity import top_n_similar
+## Główne pliki
 
-print(top_n_similar("Aeschynanthus lobianus", n=5))
+- `00-EDA-Feature_Engineering.ipynb` — eksploracja i przygotowanie danych.
+- `01-Feature_Transformation.ipynb` — kodowanie, skalowanie i PCA.
+- `02-modelling.ipynb` — klastrowanie i analiza podobieństwa.
+- `03-export_clusters.ipynb` — kod eksportu wyników klastrowania.
+- `04-recommendations.ipynb` — przykłady sprawdzania modułu rekomendacji.
+- `recommend.py` — funkcje rekomendacji.
+- `plants_clean_final.csv` — przetworzone dane roślin.
+- `artifacts/` — zapisane modele, transformacje i wektory cech.
+- `requirements.txt` — zapis zależności środowiska.
 
-Artefakty (artefacts/)
+## Status i ograniczenia
 
-ohe.pkl – zakodowany OneHotEncoder
+Dwa przykładowe wywołania modułu rekomendacji — według wybranej rośliny i według zestawu cech — zwróciły wyniki. Nie stanowi to pełnej walidacji jakości rekomendacji.
 
-feature_names_ohe.json – nazwy 18 kolumn po OHE
+Notebooki zawierają robocze ścieżki i wymagają dostosowania przed uruchomieniem na innym komputerze. Pełne wykonanie wszystkich notebooków od początku nie zostało ponownie zweryfikowane.
 
-scaler.pkl – StandardScaler (dla cold/heat tolerant)
+Zapisane modele powstały w scikit-learn 1.7.0.
 
-pca.pkl – PCA (10 wymiarów)
+Podobieństwo cech nie gwarantuje przydatności rośliny do konkretnych warunków. Nie należy traktować rekomendacji jako potwierdzenia bezpieczeństwa rośliny dla dzieci lub zwierząt.
 
-plant_embeddings.npy – embeddingi wszystkich roślin (159 × 10)
+## Autorka części analitycznej i ML
 
-plant_embeddings.csv – embeddingi z nazwami (do debugowania)
-
-
-**Pipeline w Plantelligence**
-- Świadomie **nie łączymy wszystkiego w jeden obiekt sklearn.Pipeline**.
-- Trzymamy artefakty osobno: `ohe.pkl`, `scaler.pkl`, `pca.pkl`.
-- Dzięki temu każdy krok (OHE → Scaler → Binarka → PCA) jest przejrzysty i łatwy do debugowania.
-- Funkcje `build_feature_matrix` i `to_embedding` odtwarzają pełny pipeline inference.
+Anna Gruszczyńska
